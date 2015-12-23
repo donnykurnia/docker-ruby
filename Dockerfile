@@ -1,5 +1,6 @@
-FROM heroku/cedar:14
+FROM donnykurnia/heroku-cedar-libicu:14
 MAINTAINER Terence Lee <terence@heroku.com>
+MAINTAINER Donny Kurnia <donnykurnia@gmail.com>
 
 RUN mkdir -p /app/user
 WORKDIR /app/user
