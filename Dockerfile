@@ -1,6 +1,6 @@
 FROM donnykurnia/heroku-cedar-libicu:14
-MAINTAINER Terence Lee <terence@heroku.com>
-MAINTAINER Donny Kurnia <donnykurnia@gmail.com>
+LABEL maintainer Terence Lee <terence@heroku.com>
+LABEL maintainer Donny Kurnia <donnykurnia@gmail.com>
 
 RUN mkdir -p /app/user
 WORKDIR /app/user
@@ -14,21 +14,24 @@ RUN mkdir -p /app/heroku/ruby/ruby-2.3.4
 RUN curl -s --retry 3 -L https://heroku-buildpack-ruby.s3.amazonaws.com/cedar-14/ruby-2.3.4.tgz | tar xz -C /app/heroku/ruby/ruby-2.3.4
 ENV PATH /app/heroku/ruby/ruby-2.3.4/bin:$PATH
 
-RUN mkdir -p /app/heroku/ruby/rubygems-2.6.9
-RUN curl -s --retry 3 -L https://rubygems.org/rubygems/rubygems-2.6.9.tgz | tar xz -C /app/heroku/ruby/rubygems-2.6.9 && cd /app/heroku/ruby/rubygems-2.6.9/rubygems-2.6.9 && ruby setup.rb
+RUN mkdir -p /app/heroku/ruby/rubygems-2.6.14
+RUN curl -s --retry 3 -L https://rubygems.org/rubygems/rubygems-2.6.14.tgz | tar xz -C /app/heroku/ruby/rubygems-2.6.14 && cd /app/heroku/ruby/rubygems-2.6.14/rubygems-2.6.14 && ruby setup.rb
 
 # Install Node
-RUN curl -s --retry 3 -L http://s3pository.heroku.com/node/v0.12.7/node-v0.12.7-linux-x64.tar.gz | tar xz -C /app/heroku/ruby/
-RUN mv /app/heroku/ruby/node-v0.12.7-linux-x64 /app/heroku/ruby/node-0.12.7
-ENV PATH /app/heroku/ruby/node-0.12.7/bin:$PATH
+RUN curl -s --retry 3 -L http://s3pository.heroku.com/node/v6.11.4/node-v6.11.4-linux-x64.tar.gz | tar xz -C /app/heroku/ruby/
+RUN mv /app/heroku/ruby/node-v6.11.4-linux-x64 /app/heroku/ruby/node-6.11.4
+ENV PATH /app/heroku/ruby/node-6.11.4/bin:$PATH
 
 # Install Bundler
-RUN gem install bundler -v 1.14.6 --no-ri --no-rdoc
+RUN gem install bundler -v 1.15.4 --no-ri --no-rdoc
 ENV PATH /app/user/bin:/app/heroku/ruby/bundle/ruby/2.3.0/bin:$PATH
 ENV BUNDLE_APP_CONFIG /app/heroku/ruby/.bundle/config
+RUN bundle config disable_shared_gems true && \
+    bundle config cache_all true
 
 # Run bundler to cache dependencies
 ONBUILD COPY ["Gemfile", "Gemfile.lock", "/app/user/"]
+ONBUILD COPY ["vendor/cache", "/app/user/vendor/cache"]
 ONBUILD RUN bundle install --path /app/heroku/ruby/bundle --jobs 4 --retry 5
 ONBUILD ADD . /app/user
 
